@@ -13,6 +13,24 @@
   ?:  =(index +(nt))  acc
   =/  vals  (genxyz x y z index dt)
   $(index +(index), t -.vals, x +<.vals, y +>-.vals, z +>+<.vals, acc `tang`[leaf+"{<t>} {<x>} {<y>} {<z>}, " acc])
+++  genxyz-pts
+  ::  Produce a list of the data from `genxyz`.
+  |=  [nt=@ud dt=@rs]  ^-  (list (list @rs))
+  %-  flop
+  =/  x  .1
+  =/  y  .1
+  =/  z  .1
+  =/  t  .0
+  =/  index  1
+  =/  acc=(list (list @rs))  ~
+  |-  ^-  (list (list @rs))
+  ?:  =(index +(nt))  acc
+  =/  vals  (genxyz x y z index dt)
+  =/  tt  -.vals
+  =/  xx  +<.vals
+  =/  yy  +>-.vals
+  =/  zz  +>+<.vals
+  $(index +(index), t tt, x xx, y yy, z zz, acc `(list (list @rs))`[vals acc])
 ++  genxyz
   ::  Produce each time step as a list of `@rs`.
   |=  [x=@rs y=@rs z=@rs nt=@ud dt=@rs]  ^-  (list @rs)
