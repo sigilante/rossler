@@ -80,6 +80,7 @@
     =/  py=@ud  (bin sy ymin dy np)
     =/  pi=@ud  (add px (mul ndim py))
     ::~&  "({<sx>},{<sy>}) -> {<px>} {<py>}, {<pi>}"
+    ~&  "Point #{<index>}"
   $(index +(index), grid `(list @rs)`(nick-rs [pi .1] grid))
 ++  gengrid
   ::  Let's set the grid up as a linear list of point values for now and use
@@ -118,9 +119,9 @@
 ++  gen3d
   |=  [np=@ud]  ^-  (list (list @rs))
   =/  pts  (genxyz-pts:roessler np .0.01)
-  =/  cx  .50
-  =/  cy  .-50
-  =/  cz  .50
+  =/  cx  .100
+  =/  cy  .-100
+  =/  cz  .100
   =/  theta-x  .0.0
   =/  theta-y  .0.0
   =/  theta-z  .0.0
