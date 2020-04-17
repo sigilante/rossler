@@ -7,38 +7,58 @@
 ::  Mathematical implementation based on
 ::    https://en.wikipedia.org/wiki/3D_projection
 ::
+::  Usage:
+::    *%/web/rossler/txt +proj-3d [100 10.000]
+::
 |=  [ndim=@ud np=@ud]
 ::=<  (gen3d-ppm ndim np)
 ::=<  (gen3d np)
 ::=<  (genxyzs:roessler np .0.01)
-=/  xmin  .-0
-=/  xmax  .30
-=/  ymin  .-60
-=/  ymax  .20
+=/  xmin=@rs  .-0
+=/  xmax=@rs  .30
+=/  ymin=@rs  .-120
+=/  ymax=@rs  .20
 =/  dx  (div:rs (sub:rs xmax xmin) (sun:rs ndim))
 =/  dy  (div:rs (sub:rs ymax ymin) (sun:rs ndim))
-=<  (ravel-3d-pts (gen-3d-pts ndim np) ndim)
+=<  (gen3d-ppm (ravel-3d-pts (gen-3d-pts ndim np) ndim))
 |%
-::++  gen3d-ppm
-::  ::  Produce a PPM-styled output.
-::  |=  [ndim=@ud np=@ud]  ^-  (list @t)
-::  =/  ppm-header  "P3\n{<ndim>} {<ndim>}\n255"
-::  =/  ppm-3d-pts  (gen-3d-pts ndim np)
-::  (weld ppm-header ppm-3d-pts-tape)
-::++  gen-3d-pts-tape
-::=/  grid  (gen-3d-pts ndim np)
-::?:  =(i ndim)  acc
-::=/  value  (iterpt x y dim)
-::=/  col  (snag value rainbow)
-::$(i +(i), acc (weld "{<r.col>} {<g.col>} {<b.col>} " acc))
+++  gen3d-ppm
+  ::  Produce a PPM-styled output.
+  |=  [grid=(list (list @rs))]  ^-  (list @t)
+  =/  ndim  (lent (snag 0 grid))
+  =/  header  ~['P3' (crip "{<ndim>} {<ndim>}") '255']
+  =/  ppm-3d-pts  (gen-3d-pts-tape grid)
+  (weld header ppm-3d-pts)
+++  gen-3d-pts-tape
+  ::  Produce a PPM-compatible set of rows.
+  |=  [grid=(list (list @rs))]  ^-  (list @t)
+  =/  ndim=@ud  (lent (snag 0 grid))
+  =/  j=@ud  0
+  =/  acc=(list @t)  ~
+  ~&  grid
+  |-  ^-  (list @t)
+    ?:  =(j ndim)  acc
+    ~&  "Row: {<j>} of {<ndim>}"
+    =/  row  (snag j grid)
+    =/  row-text  `@t`(crip (gen-3d-pts-row row))
+  $(j +(j), acc `(list @t)`[row-text acc])
+++  gen-3d-pts-row
+  |=  [row=(list @rs)]  ^-  tape
+  =/  ndim=@ud  (lent row)
+  =/  i=@ud  0
+  =/  acc=tape  ""
+  |-  ^-  tape
+    ?:  =(i ndim)  acc
+    =/  value=@rs  (snag i row)
+  $(i +(i), acc (weld "{<value>} {<value>} {<value>} " acc))
 ++  ravel-3d-pts
   |=  [vec=(list @rs) ndim=@ud]  ^-  (list (list @rs))
-  %-  flop
-  =/  i  1
-  =/  j  1
+  ::%-  flop
+  =/  i=@ud  1
+  =/  j=@ud  1
   =/  grid=(list (list @rs))  ~
   |-  ^-  (list (list @rs))
-    ?:  =(j ndim)  grid
+    ?:  =(j +(ndim))  grid
     =/  row-start  (mul (sub j 1) ndim)
     =/  row-end    (mul j ndim)
     =/  row  (slag row-start (scag row-end vec))
@@ -52,14 +72,14 @@
   =/  index  0
   |-  ^-  (list @rs)
     ?:  =(index np)  grid
-    =/  pt  (snag index pts) ::sorted-pts)
-    =/  sx  i.-:pt
-    =/  sy  i.+<:pt
+    =/  pt=(list @rs)  (snag index pts) ::sorted-pts)
+    =/  sx=@rs  i.-:pt
+    =/  sy=@rs  i.+<:pt
     ::  Locate the pi-th bin from the floating-point coordinates of the point.
-    =/  px  (bin sx xmin dx np)
-    =/  py  (bin sy ymin dy np)
-    =/  pi  (add px (mul ndim py))
-    ~&  "({<sx>},{<sy>}) -> {<px>} {<py>}, {<pi>}"
+    =/  px=@ud  (bin sx xmin dx np)
+    =/  py=@ud  (bin sy ymin dy np)
+    =/  pi=@ud  (add px (mul ndim py))
+    ::~&  "({<sx>},{<sy>}) -> {<px>} {<py>}, {<pi>}"
   $(index +(index), grid `(list @rs)`(nick-rs [pi .1] grid))
 ++  gengrid
   ::  Let's set the grid up as a linear list of point values for now and use
@@ -69,7 +89,7 @@
 ++  bin
   ::  Bin the value.
   |=  [p=@rs min=@rs ds=@rs np=@ud]
-  =/  index  0
+  =/  index=@ud  0
   |-  ^-  @ud
     ::  The naive algorithm is to count up in range until we find the right one.
     =/  current-bin  (add:rs min (mul:rs ds (sun:rs index)))
@@ -97,7 +117,7 @@
   (gth ay by)
 ++  gen3d
   |=  [np=@ud]  ^-  (list (list @rs))
-  =/  pts  (genxyz-pts:roessler np .0.1)
+  =/  pts  (genxyz-pts:roessler np .0.01)
   =/  cx  .50
   =/  cy  .-50
   =/  cz  .50
